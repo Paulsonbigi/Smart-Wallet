@@ -71,3 +71,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
   Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+
+
+## Run Docker Image
+docker build -t fastpay/fastpayapp:1.0 .
+After building, you can decide to run docker push to whereever you want to host it, eg. amazon ECR... or run it locally.
