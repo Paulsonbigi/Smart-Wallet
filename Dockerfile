@@ -1,6 +1,6 @@
 FROM node:16
 
-WORKDIR /MacBook-Pro/src/app
+WORKDIR /src/app
 
 COPY package*.json ./
 
@@ -14,4 +14,4 @@ ENV PORT=4000
 
 EXPOSE 4000
 
-CMD [ "node", "dist/main" ]
+CMD [ "node", "dist/main" ]`
