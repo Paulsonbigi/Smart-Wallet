@@ -64,6 +64,9 @@ $ npm run test:cov
 # build
 $ docker build . -t swift/node-web-app 
 
+# run
+$ docker run -p 49160:4000 -d paul/swift-paul 
+
 ```
 
 ## Support
