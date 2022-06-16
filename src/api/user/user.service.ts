@@ -1,7 +1,10 @@
-import { Injectable, HttpException, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, HttpException, Inject, forwardRef, Response } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { authenticator } from 'otplib';
+// import { Response } from 'express';
+import { toFileStream } from 'qrcode';
 import * as CryptoJS from 'crypto-js'
 import { CreateUserDto } from './dto/user.dto';
 import { User } from './user.entity';
@@ -104,16 +107,16 @@ export class UserService {
         }
     };
 
-    public getCookieWithJwtAccessToken(userId: number) {
+    getCookieWithJwtAccessToken(userId: number) {
         const payload: TokenPayload = { userId };
         const token = this.jwtService.sign(payload, {
           secret: this.configService.get('JWT_ACCESS_TOKEN_SECRET'),
           expiresIn: `${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}s`
         });
         return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get('JWT_ACCESS_TOKEN_EXPIRATION_TIME')}`;
-      }
+    };
      
-      public getCookieWithJwtRefreshToken(userId: number) {
+    getCookieWithJwtRefreshToken(userId: number) {
         const payload: TokenPayload = { userId };
         const token = this.jwtService.sign(payload, {
           secret: this.configService.get('JWT_REFRESH_TOKEN_SECRET'),
@@ -124,7 +127,7 @@ export class UserService {
           cookie,
           token
         }
-      }
+    };
 
     getCookieWithJwtToken =(userId: any) => {
         const payload: TokenPayload = { userId };
@@ -189,5 +192,30 @@ export class UserService {
         } catch(error: any) {
             throw new HttpException(error.message, 500);
         }
+    };
+
+    generateTwoFactorAuthenticatorSecret = async (userId: any) => {
+        try{
+            const user = await User.findOne({where: {id: userId}});
+            const secret = authenticator.generateSecret();
+            const otpauthUrl = authenticator.keyuri(user.email, process.env.BASE_URL, secret);
+            await User.update(userId, {
+                twoFactorAuthenticationSecret: otpauthUrl
+            });
+            return {
+                message: "Success",
+                secret,
+                otpauthUrl
+            };
+        } catch(error: any) {
+            throw new HttpException(error.message, 500);
+        }
+    };
+    public async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
+        try{
+            return toFileStream(stream, otpauthUrl);
+        } catch(error: any){
+            throw new HttpException(error.message, 500);
+        }
     }
-}
+};

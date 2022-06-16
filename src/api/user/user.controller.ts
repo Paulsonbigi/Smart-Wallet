@@ -1,7 +1,8 @@
 import { Body, Controller, Get, Inject, Param, UseInterceptors, UploadedFile, ParseIntPipe, Response, Res, Post, Req, Put } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Express } from 'express';
+// import { Response } from 'express';
+// import { Response } from 'express';
 import RequestWithUser from './user.request';
 import { CreateUserDto } from './dto/user.dto';
 import { User } from './user.entity';
@@ -60,6 +61,13 @@ export class UserController {
   public addAvatar(@Req() request: RequestWithUser, @UploadedFile() file: Express.Multer.File) {
     const { userId }: any = request.user;
     return this.service.updateUserImage(userId, file.buffer, file.originalname);
-  }
+  };
 
+  @Post('user/2fa-secret')
+  @UseGuards(UserAuthGuard)
+  async generate2FASecret(@Res() response: Response, @Req() request: RequestWithUser) {
+    const { userId }: any = request.user;
+    const { otpauthUrl }: any = await this.service.generateTwoFactorAuthenticatorSecret(userId);
+    return this.service.pipeQrCodeStream(response, otpauthUrl)
+  };
 }
