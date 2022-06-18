@@ -96,6 +96,11 @@ export class UserService {
     login =async (user: LoginUserInterface) => {
         try{
             const foundUser = await this.findUser(user);
+            if(foundUser.blackListed) {
+                return {
+                    message: 'Your account has been suspended, please contact our support team.',
+                };
+            }
             const payload = { email: foundUser.email, id: foundUser.id };
             return {
                 access_token: this.jwtService.sign(payload),
@@ -211,11 +216,30 @@ export class UserService {
             throw new HttpException(error.message, 500);
         }
     };
-    public async pipeQrCodeStream(stream: Response, otpauthUrl: string) {
+
+    pipeQrCodeStream(stream: Response, otpauthUrl: string) {
         try{
             return toFileStream(stream, otpauthUrl);
         } catch(error: any){
             throw new HttpException(error.message, 500);
         }
+    };
+
+    isTwoFactorAuthenticationCodeValid(twoFactorAuthenticationCode: string, user: User) {
+        return authenticator.verify({
+          token: twoFactorAuthenticationCode,
+          secret: user.twoFactorAuthenticationSecret
+        })
     }
+
+    turnOnTactorAuthentication = async (userId: any) => {
+        try{
+            await User.update(userId, {
+                isTwoFactorAuthenticationEnabled: true
+            });
+            return { message: "2FA successfully activated."}
+        } catch(error: any){
+            throw new HttpException(error.message, 500);
+        }
+    };
 };

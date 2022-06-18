@@ -70,4 +70,13 @@ export class UserController {
     const { otpauthUrl }: any = await this.service.generateTwoFactorAuthenticatorSecret(userId);
     return this.service.pipeQrCodeStream(response, otpauthUrl)
   };
+
+  @Post('user/2fa-switch')
+  @UseGuards(UserAuthGuard)
+  async turnOnTwoFactorAuthentication(@Res() response: Response, @Req() request: RequestWithUser) {
+    const { userId }: any = request.user;
+    const update2FA = await this.service.turnOnTactorAuthentication(userId);
+    console.log("update2FA", update2FA)
+    return {message: "2FA successfully activated."};
+  };
 }

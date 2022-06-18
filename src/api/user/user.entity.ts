@@ -83,6 +83,9 @@ export class User extends BaseEntity {
   @Column({ default: false })
   public isPhoneNumberConfirmed: boolean;
 
+  @Column({ default: false })
+  public blackListed: boolean;
+
   @Column()
   @CreateDateColumn({ type: 'timestamp' })
   public createdAt: Date;
