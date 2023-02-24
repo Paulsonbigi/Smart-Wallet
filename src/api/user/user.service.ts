@@ -26,8 +26,7 @@ export class UserService {
     secret = process.env.RANDOM_IV;
     constructor(
         private jwtService: JwtService,
-        private configService: ConfigService,
-        // private filesService: FilesService
+        private configService: ConfigService
     ) {}
 
     propExist = async (prop) => {
